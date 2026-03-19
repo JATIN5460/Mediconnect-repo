@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediConnect Admin — API Tester</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f14;--surface:#13161e;--surface2:#1a1e2a;--border:#252a38;
+    --border2:#2e3548;--accent:#00e5b0;--accent2:#0099ff;--accent3:#ff6b6b;
+    --amber:#ffb347;--text:#e8eaf2;--muted:#6b7494;--muted2:#8b95b8;
+    --radius:10px;--mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;
+    min-height:100vh;display:grid;grid-template-columns:280px 1fr;grid-template-rows:56px 1fr;}
+  header{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:100;}
+  .logo{font-family:var(--head);font-weight:800;font-size:17px;}
+  .logo span{color:var(--accent);}
+  .badge{font-size:10px;font-family:var(--mono);background:var(--accent);color:#000;
+    padding:2px 7px;border-radius:4px;font-weight:500;}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  .server-url{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--surface2);
+    border:1px solid var(--border);border-radius:6px;padding:4px 10px;}
+  .server-url input{background:none;border:none;color:var(--muted2);font-family:var(--mono);
+    font-size:12px;width:200px;outline:none;}
+  #status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background 0.3s;}
+  #status-dot.online{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+  #status-dot.offline{background:var(--accent3);}
+  aside{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;}
+  .section-label{font-size:10px;font-family:var(--mono);font-weight:500;color:var(--muted);
+    letter-spacing:.12em;text-transform:uppercase;padding:8px 18px 6px;margin-top:6px;}
+  .endpoint-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 18px;
+    background:none;border:none;border-left:2px solid transparent;color:var(--muted2);
+    font-family:var(--body);font-size:13px;cursor:pointer;text-align:left;
+    transition:background .15s,color .15s;}
+  .endpoint-btn:hover{background:var(--surface2);color:var(--text);}
+  .endpoint-btn.active{background:var(--surface2);color:var(--text);border-left-color:var(--accent);}
+  .method{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 6px;
+    border-radius:4px;min-width:38px;text-align:center;}
+  .GET{background:rgba(0,229,176,.12);color:var(--accent);}
+  .POST{background:rgba(0,153,255,.12);color:var(--accent2);}
+  .PATCH{background:rgba(255,179,71,.12);color:var(--amber);}
+  .DELETE{background:rgba(255,107,107,.12);color:var(--accent3);}
+  main{display:grid;grid-template-rows:auto 1fr;overflow:hidden;}
+  .request-panel{background:var(--surface);border-bottom:1px solid var(--border);
+    padding:20px 28px;display:flex;flex-direction:column;gap:14px;}
+  .req-title{font-family:var(--head);font-size:18px;font-weight:700;}
+  .req-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .token-bar{display:flex;align-items:center;gap:8px;background:var(--surface2);
+    border:1px solid var(--border);border-radius:7px;padding:7px 12px;}
+  .token-bar input{flex:1;background:none;border:none;color:var(--muted2);
+    font-family:var(--mono);font-size:11px;outline:none;}
+  .token-label{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
+  .token-status{font-size:11px;padding:2px 8px;border-radius:4px;}
+  .token-status.set{background:rgba(0,229,176,.1);color:var(--accent);}
+  .token-status.unset{background:rgba(255,107,107,.1);color:var(--accent3);}
+  .url-bar{display:flex;align-items:center;background:var(--surface2);
+    border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;}
+  .method-badge{font-family:var(--mono);font-size:12px;font-weight:500;padding:10px 16px;
+    border-right:1px solid var(--border2);min-width:70px;text-align:center;}
+  #req-url{flex:1;background:none;border:none;color:var(--text);font-family:var(--mono);
+    font-size:13px;padding:10px 14px;outline:none;}
+  #send-btn{background:var(--accent);color:#000;border:none;font-family:var(--head);
+    font-size:13px;font-weight:700;padding:10px 22px;cursor:pointer;transition:opacity .15s;}
+  #send-btn:hover{opacity:.85;}
+  #send-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .body-area{display:flex;gap:14px;flex-wrap:wrap;}
+  .field-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px;}
+  .field-group label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.05em;}
+  .field-group input,.field-group select,.field-group textarea{background:var(--surface2);
+    border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);
+    font-size:12px;padding:8px 12px;outline:none;transition:border-color .2s;}
+  .field-group input:focus,.field-group select:focus{border-color:var(--accent);}
+  .field-group select option{background:var(--surface2);}
+  .response-panel{display:grid;grid-template-rows:auto 1fr;overflow:hidden;background:var(--bg);}
+  .response-header{display:flex;align-items:center;gap:12px;padding:12px 28px;
+    border-bottom:1px solid var(--border);background:var(--surface);}
+  .response-header span{font-size:12px;font-family:var(--mono);color:var(--muted);}
+  #status-code{font-family:var(--mono);font-size:13px;font-weight:500;padding:3px 10px;
+    border-radius:5px;display:none;}
+  #status-code.ok{background:rgba(0,229,176,.12);color:var(--accent);display:inline-block;}
+  #status-code.err{background:rgba(255,107,107,.12);color:var(--accent3);display:inline-block;}
+  #response-time{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  #response-body{overflow:auto;padding:20px 28px;}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+  .json-key{color:#79b8ff;}.json-str{color:#9ecbff;}.json-num{color:var(--amber);}
+  .json-bool{color:var(--accent);}.json-null{color:var(--muted);}
+  .placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100%;gap:12px;color:var(--muted);padding:40px;text-align:center;}
+  .placeholder-icon{font-size:40px;opacity:.3;}
+  .copy-btn{margin-left:auto;background:var(--surface2);border:1px solid var(--border);
+    color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 10px;
+    border-radius:5px;cursor:pointer;transition:color .15s;}
+  .copy-btn:hover{color:var(--text);}
+  .clear-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+    font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+  .spinner{display:none;width:16px;height:16px;border:2px solid var(--border2);
+    border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 8px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Medi<span>Connect</span></div>
+  <div class="badge">API TESTER</div>
+  <div class="header-right">
+    <div class="server-url">
+      <input id="base-url" value="http://localhost:5000">
+    </div>
+    <div id="status-dot"></div>
+  </div>
+</header>
+
+<aside id="sidebar">
+  <div class="section-label">Auth</div>
+  <button class="endpoint-btn" data-key="login"><span class="method POST">POST</span>Login</button>
+  <button class="endpoint-btn" data-key="me"><span class="method GET">GET</span>Get Me</button>
+  <button class="endpoint-btn" data-key="logout"><span class="method POST">POST</span>Logout</button>
+
+  <div class="section-label">Doctors</div>
+  <button class="endpoint-btn" data-key="getDoctors"><span class="method GET">GET</span>List Doctors</button>
+  <button class="endpoint-btn" data-key="createDoctor"><span class="method POST">POST</span>Create Doctor</button>
+  <button class="endpoint-btn" data-key="getDoctorSlots"><span class="method GET">GET</span>Available Slots</button>
+  <button class="endpoint-btn" data-key="getDepartments"><span class="method GET">GET</span>Departments</button>
+
+  <div class="section-label">Patients</div>
+  <button class="endpoint-btn" data-key="getPatients"><span class="method GET">GET</span>List Patients</button>
+  <button class="endpoint-btn" data-key="createPatient"><span class="method POST">POST</span>Create Patient</button>
+
+  <div class="section-label">Appointments</div>
+  <button class="endpoint-btn" data-key="getAppointments"><span class="method GET">GET</span>List Appointments</button>
+  <button class="endpoint-btn" data-key="todayAppointments"><span class="method GET">GET</span>Today's</button>
+  <button class="endpoint-btn" data-key="createAppointment"><span class="method POST">POST</span>Book Appointment</button>
+  <button class="endpoint-btn" data-key="updateStatus"><span class="method PATCH">PATCH</span>Update Status</button>
+
+  <div class="section-label">Analytics</div>
+  <button class="endpoint-btn" data-key="dashboard"><span class="method GET">GET</span>Dashboard</button>
+  <button class="endpoint-btn" data-key="topDoctors"><span class="method GET">GET</span>Top Doctors</button>
+  <button class="endpoint-btn" data-key="monthlyTrend"><span class="method GET">GET</span>Monthly Trend</button>
+
+  <div class="section-label">System</div>
+  <button class="endpoint-btn" data-key="health"><span class="method GET">GET</span>Health Check</button>
+  <button class="endpoint-btn" data-key="getSettings"><span class="method GET">GET</span>Settings</button>
+  <button class="endpoint-btn" data-key="listBackups"><span class="method GET">GET</span>List Backups</button>
+  <button class="endpoint-btn" data-key="auditLogs"><span class="method GET">GET</span>Audit Logs</button>
+</aside>
+
+<main>
+  <div class="request-panel">
+    <div>
+      <div class="req-title" id="req-title">Login</div>
+      <div class="req-desc" id="req-desc">Authenticate and get your access token</div>
+    </div>
+    <div class="token-bar">
+      <span class="token-label">Bearer Token</span>
+      <input id="token-input" placeholder="Paste token here after login...">
+      <span class="token-status unset" id="token-status">NOT SET</span>
+      <button class="clear-btn" id="clear-btn">Clear</button>
+    </div>
+    <div class="url-bar">
+      <span class="method-badge GET" id="method-badge">GET</span>
+      <input id="req-url" readonly>
+      <div class="spinner" id="spinner"></div>
+      <button id="send-btn">SEND →</button>
+    </div>
+    <div class="body-area" id="body-area"></div>
+  </div>
+
+  <div class="response-panel">
+    <div class="response-header">
+      <span>Response</span>
+      <span id="status-code"></span>
+      <span id="response-time"></span>
+      <button class="copy-btn" id="copy-btn" style="display:none">Copy JSON</button>
+    </div>
+    <div id="response-body">
+      <div class="placeholder">
+        <div class="placeholder-icon">⚡</div>
+        <p>Select an endpoint and hit SEND</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var currentKey = 'login';
+  var lastResponse = null;
+  var today = new Date().toISOString().slice(0, 10);
+  var year  = new Date().getFullYear();
+  var month = new Date().getMonth() + 1;
+
+  var ENDPOINTS = {
+    login: {
+      method:'POST', path:'/api/auth/login', auth:false,
+      title:'Login', desc:'Authenticate with email and password. Token auto-fills after success.',
+      fields: function() { return [
+        {id:'f-email',  label:'EMAIL',    val:'admin@mediconnect.com', type:'text'},
+        {id:'f-password',label:'PASSWORD',val:'Admin@1234',            type:'password'}
+      ];},
+      body: function() { return {email:val('f-email'), password:val('f-password')}; }
+    },
+    me: {
+      method:'GET', path:'/api/auth/me', auth:true,
+      title:'Get Me', desc:'Returns the currently logged-in admin profile.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    logout: {
+      method:'POST', path:'/api/auth/logout', auth:true,
+      title:'Logout', desc:'Invalidates the current session.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    getDoctors: {
+      method:'GET', path:'/api/doctors', auth:true,
+      title:'List Doctors', desc:'Paginated list. Filter by search or department.',
+      fields:function(){return[
+        {id:'f-search',label:'SEARCH (optional)',val:'',type:'text',placeholder:'e.g. Arjun'},
+        {id:'f-dept',  label:'DEPARTMENT (optional)',val:'',type:'text',placeholder:'e.g. Cardiology'}
+      ];},
+      buildUrl:function(){
+        var u='/api/doctors?page=1&limit=10';
+        var s=val('f-search'), d=val('f-dept');
+        if(s) u+='&search='+encodeURIComponent(s);
+        if(d) u+='&department='+encodeURIComponent(d);
+        return u;
+      },
+      body:function(){return null;}
+    },
+    createDoctor: {
+      method:'POST', path:'/api/doctors', auth:true,
+      title:'Create Doctor', desc:'Register a new doctor.',
+      fields:function(){return[
+        {id:'f-name', label:'NAME',         val:'Dr. Ankit Sharma',              type:'text'},
+        {id:'f-spec', label:'SPECIALIZATION',val:'Neurology',                    type:'text'},
+        {id:'f-dept', label:'DEPARTMENT',   val:'Neurology',                     type:'text'},
+        {id:'f-email',label:'EMAIL',        val:'ankit.sharma@mediconnect.com',  type:'text'},
+        {id:'f-phone',label:'PHONE',        val:'9876500099',                    type:'text'},
+        {id:'f-lic',  label:'LICENSE NO',   val:'MCI-2010-099',                  type:'text'}
+      ];},
+      body:function(){return{
+        name:val('f-name'), specialization:val('f-spec'), department:val('f-dept'),
+        email:val('f-email'), phone:val('f-phone'), licenseNumber:val('f-lic'),
+        consultationFee:750, experience:8,
+        schedule:[{day:'Monday',startTime:'09:00',endTime:'17:00'}]
+      };}
+    },
+    getDoctorSlots: {
+      method:'GET', path:'/api/doctors/:id/slots', auth:true,
+      title:'Available Slots', desc:'Free appointment slots for a doctor on a date.',
+      fields:function(){return[
+        {id:'f-docid',label:'DOCTOR ID', val:'',    type:'text', placeholder:'Paste _id from List Doctors'},
+        {id:'f-date', label:'DATE',      val:today, type:'date'}
+      ];},
+      buildUrl:function(){return '/api/doctors/'+(val('f-docid')||':id')+'/slots?date='+val('f-date');},
+      body:function(){return null;}
+    },
+    getDepartments: {
+      method:'GET', path:'/api/doctors/departments', auth:true,
+      title:'Departments', desc:'All unique departments.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    getPatients: {
+      method:'GET', path:'/api/patients', auth:true,
+      title:'List Patients', desc:'Paginated list of registered patients.',
+      fields:function(){return[
+        {id:'f-search',label:'SEARCH (optional)',val:'',type:'text',placeholder:'Patient name'}
+      ];},
+      buildUrl:function(){
+        var u='/api/patients?page=1&limit=10';
+        var s=val('f-search');
+        if(s) u+='&search='+encodeURIComponent(s);
+        return u;
+      },
+      body:function(){return null;}
+    },
+    createPatient: {
+      method:'POST', path:'/api/patients', auth:true,
+      title:'Create Patient', desc:'Register a new patient record.',
+      fields:function(){return[
+        {id:'f-name',  label:'NAME',  val:'Ravi Kumar',  type:'text'},
+        {id:'f-phone', label:'PHONE', val:'9876511100',  type:'text'},
+        {id:'f-gender',label:'GENDER',val:'male',        type:'select', options:['male','female','other']},
+        {id:'f-blood', label:'BLOOD GROUP',val:'O+',     type:'select', options:['O+','A+','B+','AB+','O-','A-','B-','AB-']}
+      ];},
+      body:function(){return{name:val('f-name'),phone:val('f-phone'),gender:val('f-gender'),bloodGroup:val('f-blood')};}
+    },
+    getAppointments: {
+      method:'GET', path:'/api/appointments', auth:true,
+      title:'List Appointments', desc:'All appointments with optional filters.',
+      fields:function(){return[
+        {id:'f-status',label:'STATUS',val:'',type:'select',options:['','scheduled','confirmed','completed','cancelled','no-show']},
+        {id:'f-date',  label:'DATE (optional)',val:'',type:'date'}
+      ];},
+      buildUrl:function(){
+        var u='/api/appointments?page=1&limit=10';
+        var s=val('f-status'), d=val('f-date');
+        if(s) u+='&status='+s;
+        if(d) u+='&date='+d;
+        return u;
+      },
+      body:function(){return null;}
+    },
+    todayAppointments: {
+      method:'GET', path:'/api/appointments/today', auth:true,
+      title:"Today's Appointments", desc:"All appointments scheduled for today.",
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    createAppointment: {
+      method:'POST', path:'/api/appointments', auth:true,
+      title:'Book Appointment', desc:'Book a new appointment. Checks for slot conflicts.',
+      fields:function(){return[
+        {id:'f-pname', label:'PATIENT NAME',  val:'Ravi Kumar',  type:'text'},
+        {id:'f-pphone',label:'PATIENT PHONE', val:'9876511100',  type:'text'},
+        {id:'f-docid', label:'DOCTOR ID',     val:'',            type:'text', placeholder:'Paste from List Doctors'},
+        {id:'f-date',  label:'DATE',          val:today,         type:'date'},
+        {id:'f-slot',  label:'TIME SLOT',     val:'10:00',       type:'text'},
+        {id:'f-reason',label:'REASON',        val:'Routine checkup', type:'text'}
+      ];},
+      body:function(){return{
+        patientName:val('f-pname'), patientPhone:val('f-pphone'),
+        doctorId:val('f-docid'), appointmentDate:val('f-date'),
+        timeSlot:val('f-slot'), reason:val('f-reason'), type:'consultation'
+      };}
+    },
+    updateStatus: {
+      method:'PATCH', path:'/api/appointments/:id/status', auth:true,
+      title:'Update Status', desc:'Transition appointment status through the workflow.',
+      fields:function(){return[
+        {id:'f-apptid',label:'APPOINTMENT ID',val:'',type:'text',placeholder:'Paste _id from List Appointments'},
+        {id:'f-status',label:'NEW STATUS',    val:'confirmed',type:'select',options:['confirmed','in-progress','completed','cancelled','no-show']}
+      ];},
+      buildUrl:function(){return '/api/appointments/'+(val('f-apptid')||':id')+'/status';},
+      body:function(){return{status:val('f-status')};}
+    },
+    dashboard: {
+      method:'GET', path:'/api/analytics/dashboard', auth:true,
+      title:'Dashboard Stats', desc:'Summary: total doctors, patients, appointments.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    topDoctors: {
+      method:'GET', path:'/api/analytics/top-doctors?limit=5', auth:true,
+      title:'Top Doctors', desc:'Doctors ranked by appointment count.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    monthlyTrend: {
+      method:'GET', path:'/api/analytics/trend/monthly', auth:true,
+      title:'Monthly Trend', desc:'Daily appointment counts for a given month.',
+      fields:function(){return[
+        {id:'f-year', label:'YEAR',      val:String(year),  type:'text'},
+        {id:'f-month',label:'MONTH 1-12',val:String(month), type:'text'}
+      ];},
+      buildUrl:function(){return '/api/analytics/trend/monthly?year='+val('f-year')+'&month='+val('f-month');},
+      body:function(){return null;}
+    },
+    health: {
+      method:'GET', path:'/health', auth:false,
+      title:'Health Check', desc:'Verify the server is running. No auth needed.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    getSettings: {
+      method:'GET', path:'/api/settings', auth:true,
+      title:'Clinic Settings', desc:'Get current clinic configuration.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    listBackups: {
+      method:'GET', path:'/api/backup', auth:true,
+      title:'List Backups', desc:'All database backup files. Requires super_admin.',
+      fields:function(){return[];}, body:function(){return null;}
+    },
+    auditLogs: {
+      method:'GET', path:'/api/audit?limit=10', auth:true,
+      title:'Audit Logs', desc:'Recent admin actions. Requires super_admin.',
+      fields:function(){return[];}, body:function(){return null;}
+    }
+  };
+
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function getBase() {
+    return (document.getElementById('base-url').value || 'http://localhost:5000').replace(/\/$/, '');
+  }
+
+  function updateTokenStatus() {
+    var t = document.getElementById('token-input').value.trim();
+    var el = document.getElementById('token-status');
+    el.textContent = t ? 'SET' : 'NOT SET';
+    el.className = 'token-status ' + (t ? 'set' : 'unset');
+  }
+
+  function autoExtractToken(data) {
+    if (data && data.data && data.data.accessToken) {
+      document.getElementById('token-input').value = data.data.accessToken;
+      updateTokenStatus();
+    }
+  }
+
+  function renderFields(fields) {
+    var area = document.getElementById('body-area');
+    area.innerHTML = '';
+    fields.forEach(function(f) {
+      var g = document.createElement('div');
+      g.className = 'field-group';
+      var lbl = document.createElement('label');
+      lbl.textContent = f.label;
+      g.appendChild(lbl);
+      var inp;
+      if (f.type === 'select') {
+        inp = document.createElement('select');
+        inp.id = f.id;
+        f.options.forEach(function(o) {
+          var opt = document.createElement('option');
+          opt.value = o; opt.textContent = o || '— All —';
+          if (o === f.val) opt.selected = true;
+          inp.appendChild(opt);
+        });
+      } else {
+        inp = document.createElement('input');
+        inp.id = f.id;
+        inp.type = f.type || 'text';
+        inp.value = f.val || '';
+        if (f.placeholder) inp.placeholder = f.placeholder;
+      }
+      g.appendChild(inp);
+      area.appendChild(g);
+    });
+  }
+
+  function load(key) {
+    var ep = ENDPOINTS[key];
+    if (!ep) return;
+    currentKey = key;
+
+    document.querySelectorAll('.endpoint-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.key === key);
+    });
+
+    document.getElementById('req-title').textContent = ep.title;
+    document.getElementById('req-desc').textContent  = ep.desc;
+
+    var mb = document.getElementById('method-badge');
+    mb.textContent  = ep.method;
+    mb.className    = 'method-badge ' + ep.method;
+
+    var url = ep.buildUrl ? ep.buildUrl() : ep.path;
+    document.getElementById('req-url').value = url;
+
+    renderFields(ep.fields());
+
+    document.getElementById('response-body').innerHTML =
+      '<div class="placeholder"><div class="placeholder-icon">→</div><p>Press SEND to call ' + ep.method + ' ' + ep.path + '</p></div>';
+    var sc = document.getElementById('status-code');
+    sc.className = ''; sc.textContent = '';
+    document.getElementById('response-time').textContent = '';
+    document.getElementById('copy-btn').style.display = 'none';
+  }
+
+  function syntaxHighlight(json) {
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function(m) {
+      if (/^"/.test(m)) return /:$/.test(m) ? '<span class="json-key">'+m+'</span>' : '<span class="json-str">'+m+'</span>';
+      if (/true|false/.test(m)) return '<span class="json-bool">'+m+'</span>';
+      if (/null/.test(m)) return '<span class="json-null">'+m+'</span>';
+      return '<span class="json-num">'+m+'</span>';
+    });
+  }
+
+  function renderResponse(status, ms, data) {
+    var sc = document.getElementById('status-code');
+    sc.textContent = status;
+    sc.className   = (status >= 200 && status < 300) ? 'ok' : 'err';
+    document.getElementById('response-time').textContent = ms + 'ms';
+    document.getElementById('copy-btn').style.display = 'inline-block';
+    document.getElementById('response-body').innerHTML =
+      '<pre>' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</pre>';
+  }
+
+  function renderError(msg, ms) {
+    var sc = document.getElementById('status-code');
+    sc.textContent = 'ERR'; sc.className = 'err';
+    document.getElementById('response-time').textContent = ms + 'ms';
+    document.getElementById('response-body').innerHTML =
+      '<pre style="color:var(--accent3)">Network Error: ' + msg + '\n\nMake sure npm run dev is running at ' + getBase() + '</pre>';
+  }
+
+  function send() {
+    var ep = ENDPOINTS[currentKey];
+    if (!ep) return;
+
+    var url = ep.buildUrl ? ep.buildUrl() : ep.path;
+    document.getElementById('req-url').value = url;
+
+    var fullUrl = getBase() + url;
+    var token   = document.getElementById('token-input').value.trim();
+    var btn     = document.getElementById('send-btn');
+    var spinner = document.getElementById('spinner');
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+
+    var headers = { 'Content-Type': 'application/json' };
+    if (ep.auth && token) headers['Authorization'] = 'Bearer ' + token;
+
+    var opts = { method: ep.method, headers: headers };
+    var bodyData = ep.body ? ep.body() : null;
+    if (bodyData && ep.method !== 'GET') opts.body = JSON.stringify(bodyData);
+
+    var t0 = Date.now();
+    fetch(fullUrl, opts)
+      .then(function(res) {
+        var ms = Date.now() - t0;
+        return res.json().then(function(data) {
+          lastResponse = data;
+          autoExtractToken(data);
+          renderResponse(res.status, ms, data);
+        });
+      })
+      .catch(function(err) {
+        renderError(err.message, Date.now() - t0);
+      })
+      .finally(function() {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      });
+  }
+
+  function ping() {
+    fetch(getBase() + '/health', { signal: AbortSignal.timeout(3000) })
+      .then(function(r) {
+        document.getElementById('status-dot').className = r.ok ? 'online' : 'offline';
+      })
+      .catch(function() {
+        document.getElementById('status-dot').className = 'offline';
+      });
+  }
+
+  // ── Event listeners (NO inline handlers) ─────────────────────────────────
+  document.getElementById('sidebar').addEventListener('click', function(e) {
+    var btn = e.target.closest('.endpoint-btn');
+    if (btn && btn.dataset.key) load(btn.dataset.key);
+  });
+
+  document.getElementById('send-btn').addEventListener('click', send);
+
+  document.getElementById('token-input').addEventListener('input', updateTokenStatus);
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    document.getElementById('token-input').value = '';
+    updateTokenStatus();
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    if (!lastResponse) return;
+    navigator.clipboard.writeText(JSON.stringify(lastResponse, null, 2));
+    this.textContent = 'Copied!';
+    var self = this;
+    setTimeout(function() { self.textContent = 'Copy JSON'; }, 1500);
+  });
+
+  document.getElementById('base-url').addEventListener('input', function() {
+    clearTimeout(window._pingTimer);
+    window._pingTimer = setTimeout(ping, 800);
+  });
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  load('login');
+  ping();
+  setInterval(ping, 10000);
+
+})();
+</script>
+</body>
+</html>
