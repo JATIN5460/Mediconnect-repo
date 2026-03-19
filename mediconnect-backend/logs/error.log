@@ -1,0 +1,4 @@
+{"level":"error","message":"400 - Invalid _id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5Yjk3ZjMwNDQwZThiNGFjMjI3YTAyYyIsImlhdCI6MTc3MzgzMjExNCwiZXhwIjoxNzc0NDM2OTE0fQ.oQIgMXZPkvWyMPfjxiw0xvt8sZJ5pEqXlBYetahihYA - /api/doctors/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5Yjk3ZjMwNDQwZThiNGFjMjI3YTAyYyIsImlhdCI6MTc3MzgzMjExNCwiZXhwIjoxNzc0NDM2OTE0fQ.oQIgMXZPkvWyMPfjxiw0xvt8sZJ5pEqXlBYetahihYA/slots?date=2026-03-18 - GET","timestamp":"2026-03-18 16:41:07"}
+{"level":"error","message":"409 - email already exists. - /api/doctors - POST","timestamp":"2026-03-19 15:27:43"}
+{"level":"error","message":"409 - licenseNumber already exists. - /api/doctors - POST","timestamp":"2026-03-19 15:28:51"}
+{"level":"error","message":"409 - email already exists. - /api/doctors - POST","timestamp":"2026-03-19 22:58:10"}
