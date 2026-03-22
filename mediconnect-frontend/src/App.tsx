@@ -1,3 +1,4 @@
+import AnalyticsPage from './pages/AnalyticsPage'
 import AppointmentsPage from './pages/AppointmentsPage'
 import PatientsPage from './pages/PatientsPage'
 import DoctorsPage from './pages/DoctorsPage'
@@ -34,6 +35,7 @@ function App() {
              <Route path="doctors" element={<DoctorsPage />} /> 
              <Route path="patients" element={<PatientsPage />} />
              <Route path="appointments" element={<AppointmentsPage />} />
+             <Route path="analytics" element={<AnalyticsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
