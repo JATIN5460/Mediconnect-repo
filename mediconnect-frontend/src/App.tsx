@@ -1,3 +1,4 @@
+import PatientsPage from './pages/PatientsPage'
 import DoctorsPage from './pages/DoctorsPage'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -29,6 +30,8 @@ function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+             <Route path="doctors" element={<DoctorsPage />} /> 
+             <Route path="patients" element={<PatientsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
