@@ -1,3 +1,4 @@
+import AdminsPage from './pages/AdminsPage'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
@@ -51,7 +52,9 @@ function App() {
               <Route path="settings"         element={<SettingsPage />} />
               <Route path="backup"           element={<BackupPage />} />
               <Route path="audit"            element={<AuditLogsPage />} />
+              <Route path="admins" element={<AdminsPage />} />
               <Route path="*"                element={<NotFoundPage />} />
+
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

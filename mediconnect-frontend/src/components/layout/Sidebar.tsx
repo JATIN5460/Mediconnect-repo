@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, UserRound, Calendar,
   BarChart3, Settings, HardDrive, ClipboardList,
-  LogOut, Menu, X
+  LogOut, Menu, X ,UserCog
 } from 'lucide-react'
 import { useAuthStore } from '../../store/auth.store'
 import { logoutApi } from '../../api/auth.api'
@@ -21,6 +21,7 @@ const adminItems = [
   { to: '/settings',  icon: Settings,      label: 'Settings'    },
   { to: '/backup',    icon: HardDrive,     label: 'Backup'      },
   { to: '/audit',     icon: ClipboardList, label: 'Audit Logs'  },
+  { to: '/admins', icon: UserCog, label: 'Admin Accounts' },
 ]
 
 const Sidebar = () => {
