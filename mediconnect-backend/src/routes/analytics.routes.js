@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analyticsController');
 const { protect } = require('../middleware/auth');
+const tenant = require('../middleware/tenant');
 
-router.use(protect);
+router.use(protect,tenant);
 
 router.get('/dashboard',        analyticsController.getDashboard);
 router.get('/trend/monthly',    analyticsController.getMonthlyTrend);

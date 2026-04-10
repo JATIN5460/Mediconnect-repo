@@ -3,10 +3,11 @@ const router = express.Router();
 const ac  = require('../controllers/appointmentController');
 const pc  = require('../controllers/prescriptionController');
 const { protect, restrictTo } = require('../middleware/auth');
+const tenant = require('../middleware/tenant');
 const { validate, appointmentSchema } = require('../utils/validators');
 const auditLog = require('../middleware/auditLogger');
 
-router.use(protect);
+router.use(protect,tenant);
 
 // Appointment CRUD
 router.get('/today',    ac.getTodayAppointments);

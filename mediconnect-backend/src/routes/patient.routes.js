@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const pc = require('../controllers/patientController');
 const { protect, restrictTo } = require('../middleware/auth');
+const tenant = require('../middleware/tenant');
 const auditLog = require('../middleware/auditLogger');
 
-router.use(protect);
+router.use(protect,tenant);
 
 router.get('/',    pc.getAllPatients);
 router.get('/:id', pc.getPatientById);

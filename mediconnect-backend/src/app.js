@@ -23,7 +23,7 @@ const backupRoutes      = require('./routes/backup.routes');
 const settingsRoutes    = require('./routes/settings.routes');
 const auditRoutes       = require('./routes/audit.routes');
 const exportRoutes      = require('./routes/export.routes');
-
+const clinicRoutes = require('./routes/clinic.routes');
 const app = express();
 
 // ─── Security ─────────────────────────────────────────────────────────────────
@@ -94,6 +94,7 @@ app.use('/api/backup',       backupRoutes);
 app.use('/api/settings',     settingsRoutes);
 app.use('/api/audit',        auditRoutes);
 app.use('/api/export',       exportRoutes);
+app.use('/api/clinics', clinicRoutes);
 
 // ─── Error handling ───────────────────────────────────────────────────────────
 app.use(notFound);

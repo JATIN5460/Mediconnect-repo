@@ -10,9 +10,16 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   await connectDB();
 
-  const server = app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     logger.info('MediConnect Admin API running on port ' + PORT);
     logger.info('Environment: ' + process.env.NODE_ENV);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.error(`Port ${PORT} already in use. Try a different port or kill process: npx kill-port ${PORT}`);
+      process.exit(1);
+    }
+    logger.error('Server error: ' + err.message);
+    process.exit(1);
   });
 
   // ─── Scheduled backup ───────────────────────────────────────────────────
