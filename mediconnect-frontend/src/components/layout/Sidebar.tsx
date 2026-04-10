@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, UserRound, Calendar,
   BarChart3, Settings, HardDrive, ClipboardList,
-  LogOut, Menu, X ,UserCog
+  LogOut, Menu, X, UserCog, Building2
 } from 'lucide-react'
 import { useAuthStore } from '../../store/auth.store'
 import { logoutApi } from '../../api/auth.api'
@@ -18,15 +18,31 @@ const navItems = [
 ]
 
 const adminItems = [
-  { to: '/settings',  icon: Settings,      label: 'Settings'    },
-  { to: '/backup',    icon: HardDrive,     label: 'Backup'      },
-  { to: '/audit',     icon: ClipboardList, label: 'Audit Logs'  },
-  { to: '/admins', icon: UserCog, label: 'Admin Accounts' },
+  {
+    to: '/settings', icon: Settings, label: 'Settings',
+    roles: ['super_admin', 'clinic_owner', 'admin'],
+  },
+  {
+    to: '/backup', icon: HardDrive, label: 'Backup',
+    roles: ['super_admin', 'clinic_owner'],
+  },
+  {
+    to: '/audit', icon: ClipboardList, label: 'Audit Logs',
+    roles: ['super_admin', 'clinic_owner'],
+  },
+  {
+    to: '/admins', icon: UserCog, label: 'Admin Accounts',
+    roles: ['super_admin', 'clinic_owner'],
+  },
+  {
+    to: '/clinics', icon: Building2, label: 'Clinics',
+    roles: ['super_admin'],
+  },
 ]
 
 const Sidebar = () => {
   const { user, logout } = useAuthStore()
-  const navigate = useNavigate()
+  const navigate         = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -34,6 +50,17 @@ const Sidebar = () => {
     logout()
     toast.success('Logged out successfully')
     navigate('/login')
+  }
+
+  const filteredAdminItems = adminItems.filter(
+    item => item.roles.includes(user?.role || '')
+  )
+
+  const roleLabel: Record<string, string> = {
+    super_admin:  'Super Admin',
+    clinic_owner: 'Clinic Owner',
+    admin:        'Admin',
+    viewer:       'Viewer',
   }
 
   const NavContent = () => (
@@ -75,12 +102,12 @@ const Sidebar = () => {
           </NavLink>
         ))}
 
-        {(user?.role === 'super_admin' || user?.role === 'admin') && (
+        {filteredAdminItems.length > 0 && (
           <>
             <p className="text-xs text-gray-500 uppercase tracking-wider px-3 mt-4 mb-2">
               Admin
             </p>
-            {adminItems.map((item) => (
+            {filteredAdminItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -107,7 +134,9 @@ const Sidebar = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-xs text-gray-400 truncate">
+              {roleLabel[user?.role || ''] || user?.role}
+            </p>
           </div>
         </div>
         <button

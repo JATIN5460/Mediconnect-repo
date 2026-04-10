@@ -2,7 +2,7 @@ export interface Admin {
   _id: string
   name: string
   email: string
-  role: 'super_admin' | 'admin' | 'viewer'
+  role: 'super_admin' | 'admin' | 'viewer' |'clinic_owner'
   isActive: boolean
   lastLogin: string
   createdAt: string
