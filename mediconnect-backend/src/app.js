@@ -26,6 +26,27 @@ const exportRoutes      = require('./routes/export.routes');
 const clinicRoutes = require('./routes/clinic.routes');
 const app = express();
 
+//for the mobile apps and others desktop users that will require backend for running
+//can be updated in future 
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowed = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map(o => o.trim())
+
+    // Allow requests with no origin (mobile apps, Postman)
+    if (!origin) return callback(null, true)
+
+    if (allowed.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('CORS blocked: ' + origin))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+}))
+
 // ─── Security ─────────────────────────────────────────────────────────────────
 // Disable CSP for .html files so the API tester works without restrictions
 app.use((req, res, next) => {
